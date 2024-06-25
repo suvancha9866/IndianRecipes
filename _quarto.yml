@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "IndianRecipes"
+  title: "Indian Recipes"
   navbar:
     left:
       - href: index.qmd

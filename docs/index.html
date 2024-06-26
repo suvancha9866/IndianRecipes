@@ -134,7 +134,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#section-1-dataset" id="toc-section-1-dataset" class="nav-link active" data-scroll-target="#section-1-dataset">Section 1: Dataset</a></li>
+  <li><a href="#section-2-exploratory-data-analysis" id="toc-section-2-exploratory-data-analysis" class="nav-link" data-scroll-target="#section-2-exploratory-data-analysis">Section 2: Exploratory Data Analysis</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -156,14 +163,80 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
+<section id="section-1-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="section-1-dataset">Section 1: Dataset</h2>
+<p>This is an examination of an Indian Food Dataset containing dishes from various states and regions of India.</p>
+<p>I chose this dataset because I am Indian American, and I love looking at food. I thought it would be interesting to analyze the regions and states of India and how their food differentiates and varies. This was also a really lovely, laid-out dataset with flavor profiles and course types.</p>
+<p>I found this dataset by searching food on <a href="https://www.kaggle.com/datasets/nehaprabhavalkar/indian-food-101/datandefined">Kaggle</a>. It caught my eye, and I wanted to analyze it. This is the <code>indian_food.csv</code> dataset.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">4</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>india <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"indian_food.csv"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(india)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 5</code></pre>
+<pre><code>Rows: 255
+Columns: 9
+$ name           &lt;chr&gt; "Balu shahi", "Boondi", "Gajar ka halwa", "Ghevar", "Gu…
+$ ingredients    &lt;chr&gt; "Maida flour, yogurt, oil, sugar", "Gram flour, ghee, s…
+$ diet           &lt;chr&gt; "vegetarian", "vegetarian", "vegetarian", "vegetarian",…
+$ prep_time      &lt;int&gt; 45, 80, 15, 15, 15, 10, 10, 10, 20, 10, 10, 5, 20, 10, …
+$ cook_time      &lt;int&gt; 25, 30, 60, 30, 40, 50, 50, 20, 30, 40, 40, 5, 30, 30, …
+$ flavor_profile &lt;chr&gt; "sweet", "sweet", "sweet", "sweet", "sweet", "sweet", "…
+$ course         &lt;chr&gt; "dessert", "dessert", "dessert", "dessert", "dessert", …
+$ state          &lt;chr&gt; "West Bengal", "Rajasthan", "Punjab", "Rajasthan", "Wes…
+$ region         &lt;chr&gt; "East", "West", "North", "West", "East", "East", "North…</code></pre>
+</div>
+</div>
+<p>The Indian Food dataset that we are working with has 225 food entries and 9 columns of characteristics.</p>
+<p>Throughout this analysis, we will break down many columns to see similarities and differences between the regions and states.</p>
+<p><strong>Disclaimer</strong>: Food is very various and infinite. This is not a comprehensive list of Indian Food by any means, so we are doing a surface-level analysis. Anything discovered here is taken with a grain of salt because the sample size for everything is not greater than 10% of the whole population.</p>
+</section>
+<section id="section-2-exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="section-2-exploratory-data-analysis">Section 2: Exploratory Data Analysis</h2>
+<p>Lets take a look at this data. I want to do this my looking at many questions that I want answers to. We can do this by looking at graphs.</p>
+<ol type="1">
+<li>What is the distribution of dishes from each state? What about each region?</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> india <span class="sc">|&gt;</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state) <span class="sc">|&gt;</span> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">state =</span> <span class="fu">ifelse</span>(state <span class="sc">==</span> <span class="st">"-1"</span>, <span class="st">"Other"</span>, state</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                       )</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(state) <span class="sc">|&gt;</span> </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">count =</span> n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(states, <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x=</span>state, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y=</span>count)) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Number of Dishes per State in Dataset"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"State"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Number of Dishes"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Source: Kaggle"</span>) <span class="sc">+</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">family =</span> <span class="st">"serif"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                            <span class="at">color =</span> <span class="st">"black"</span>),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">15</span>),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.y =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">90</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">size =</span> <span class="dv">8</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">hjust =</span> .<span class="dv">3</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                                   <span class="at">color =</span> <span class="st">"black"</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                                   ),</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.line.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">axis.ticks.x =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> .<span class="dv">5</span>, </span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">size=</span><span class="dv">20</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

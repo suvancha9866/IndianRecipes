@@ -2,7 +2,79 @@
 title: "Indian Recipes"
 ---
 
-```{r}
+## Section 1: Dataset
 
-1 + 4
+This is an examination of an Indian Food Dataset containing dishes from various states and regions of India.
+
+I chose this dataset because I am Indian American, and I love looking at food. I thought it would be interesting to analyze the regions and states of India and how their food differentiates and varies. This was also a really lovely, laid-out dataset with flavor profiles and course types.
+
+I found this dataset by searching food on [Kaggle](https://www.kaggle.com/datasets/nehaprabhavalkar/indian-food-101/datandefined). It caught my eye, and I wanted to analyze it. This is the `indian_food.csv` dataset.
+
+```{r imports, include=FALSE}
+library(rvest)
+library(tidyverse)
+library(janitor)
+library(readr)
+library(dplyr)
+library(gt)
+library(scales)
+library(ggthemes)
+library(extrafont)
+library(knitr)
+loadfonts(device = "win")
+```
+
+```{r loadingdata}
+india <- read.csv("indian_food.csv")
+glimpse(india)
+```
+
+The Indian Food dataset that we are working with has 225 food entries and 9 columns of characteristics.
+
+Throughout this analysis, we will break down many columns to see similarities and differences between the regions and states.
+
+**Disclaimer**: Food is very various and infinite. This is not a comprehensive list of Indian Food by any means, so we are doing a surface-level analysis. Anything discovered here is taken with a grain of salt because the sample size for everything is not greater than 10% of the whole population.
+
+## Section 2: Exploratory Data Analysis
+
+Lets take a look at this data. I want to do this my looking at many questions that I want answers to. We can do this by looking at graphs.
+
+1.  What is the distribution of dishes from each state? What about each region?
+
+```{r q1, warning=FALSE, results='hide'}
+states <- india |> 
+  group_by(state) |> 
+  summarize(
+    n = n()
+  ) |> 
+  mutate(state = ifelse(state == "-1", "Other", state
+                       )
+         ) |> 
+  arrange(state) |> 
+  rename(count = n)
+```
+
+```{r}
+ggplot(states, mapping = aes(x=state, 
+                             y=count)) +
+  geom_col() +
+  labs(title = "Number of Dishes per State in Dataset",
+       x = "State",
+       y = "Number of Dishes",
+       caption = "Source: Kaggle") +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 10),
+        axis.text.x = element_text(angle = 90,
+                                   size = 8,
+                                   hjust = .3,
+                                   color = "black"
+                                   ),
+        axis.line.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        )
 ```

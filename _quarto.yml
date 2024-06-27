@@ -4,11 +4,17 @@ project:
 
 website:
   title: "Indian Recipes"
+  description: "An analysis on an Indian Food Dataset"
+  favicon: curry.png
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
+      - href: about.qmd
+        text: About
+      - icon: github
+        href: https://github.com/suvancha9866/IndianRecipes.git
+        aria-label: Github
 
 format:
   html:

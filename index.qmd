@@ -6,7 +6,7 @@ title: "Indian Recipes"
 
 This is an examination of an Indian Food Dataset containing dishes from various states and regions of India.
 
-I chose this dataset because I am Indian American, and I love looking at food. I thought it would be interesting to analyze the regions and states of India and how their food differentiates and varies. This was also a really lovely, laid-out dataset with flavor profiles and course types.
+I chose this dataset because I am Indian American and love looking at food. I thought it would be interesting to analyze the regions and states of India and how their food differentiates and varies. This was also a really lovely, laid-out dataset with flavor profiles and course types.
 
 I found this dataset by searching food on [Kaggle](https://www.kaggle.com/datasets/nehaprabhavalkar/indian-food-101/datandefined). It caught my eye, and I wanted to analyze it. This is the `indian_food.csv` dataset.
 
@@ -21,60 +21,247 @@ library(scales)
 library(ggthemes)
 library(extrafont)
 library(knitr)
+library(wesanderson)
+library(plotly)
 loadfonts(device = "win")
 ```
 
 ```{r loadingdata}
 india <- read.csv("indian_food.csv")
-glimpse(india)
+head(india)
 ```
 
-The Indian Food dataset that we are working with has 225 food entries and 9 columns of characteristics.
+The Indian Food dataset we are working with has 225 food entries and 9 columns of characteristics.
 
 Throughout this analysis, we will break down many columns to see similarities and differences between the regions and states.
 
-**Disclaimer**: Food is very various and infinite. This is not a comprehensive list of Indian Food by any means, so we are doing a surface-level analysis. Anything discovered here is taken with a grain of salt because the sample size for everything is not greater than 10% of the whole population.
+**Disclaimer**: Food is very various and infinite. This is not a comprehensive list of Indian Food by any means, so we are doing a surface-level analysis. Anything discovered here is taken with a grain of salt because the sample size for everything is not greater than 10% of the population.
 
 ## Section 2: Exploratory Data Analysis
 
-Lets take a look at this data. I want to do this my looking at many questions that I want answers to. We can do this by looking at graphs.
+Let's examine this data. I want to do this by looking at graphs, which I can use to answer many questions.
 
-1.  What is the distribution of dishes from each state? What about each region?
+#### 1. What is the distribution of dishes from each state? What about each region?
 
-```{r q1, warning=FALSE, results='hide'}
+```{r q1a, warning=FALSE, results='hide'}
 states <- india |> 
   group_by(state) |> 
-  summarize(
-    n = n()
-  ) |> 
-  mutate(state = ifelse(state == "-1", "Other", state
-                       )
+  summarize(n = n()) |> 
+  mutate(state = ifelse(state == "-1", "Other", 
+                        state)
          ) |> 
   arrange(state) |> 
   rename(count = n)
 ```
 
 ```{r}
-ggplot(states, mapping = aes(x=state, 
-                             y=count)) +
+state_graph <- ggplot(states, 
+                      mapping = aes(x=state,
+                                    y=count,
+                                    fill=state,
+                                    text = paste("State: ", state, "\n",
+                                                 "Count: ", count, sep=""))) +
   geom_col() +
   labs(title = "Number of Dishes per State in Dataset",
        x = "State",
-       y = "Number of Dishes",
-       caption = "Source: Kaggle") +
+       y = "Number of Dishes") +
+  theme_wsj() +
   theme(text = element_text(family = "serif",
                             color = "black"),
         axis.title.x = element_text(size = 15),
         axis.title.y = element_text(size = 15),
         axis.text.y = element_text(size = 10),
-        axis.text.x = element_text(angle = 90,
-                                   size = 8,
-                                   hjust = .3,
+        axis.text.x = element_text(angle = 80,
+                                   size = 10,
+                                   hjust = .9,
                                    color = "black"
                                    ),
         axis.line.x = element_blank(),
         axis.ticks.x = element_blank(),
         plot.title = element_text(hjust = .5, 
-                                  size=20)
+                                  size=20),
+        legend.position = "none"
         )
 ```
+
+```{r}
+ggplotly(state_graph, tooltip = "text")
+```
+
+It is apparent that some states are very overrepresented in this dataset, like Gujurat, Punjab, and Maharashtra. Some states do not have that many dishes in this dataset, like Tripura, Chhattisgarh, and Nagaland. With this knowledge, any analysis that we do that includes the states will not be accurate because not every state is represented equally. But that doesn't stop us from exploring this dataset.
+
+```{r q1b, warning=FALSE, results="hide"}
+regions <- india |> 
+  group_by(region) |> 
+  summarize(n = n()) |> 
+  mutate(region = ifelse(region == "-1", "Other", 
+                         region
+                       )
+         ) |> 
+  arrange(region) |> 
+  rename(count = n)
+```
+
+```{r}
+region_graph <- ggplot(regions, 
+                       mapping = aes(x=region,
+                                     y=count,
+                                     fill=region,
+                                     text = paste("Region: ", region, "\n",
+                                                  "Count: ", count, sep=""))) +
+  geom_col() +
+  labs(title = "Number of Dishes per Region in Dataset",
+       x = "Region",
+       y = "Number of Dishes") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(angle = 80,
+                                   size = 15,
+                                   hjust = .5,
+                                   color = "black"
+                                   ),
+        axis.line.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.position = "none"
+        )
+```
+
+```{r}
+ggplotly(region_graph, tooltip = "text")
+```
+
+This is also not a uniform distribution as West and South dominate North East and Central India. But that will not stop me from looking at this dataset more.
+
+#### 2. How many different Flavor Profiles/Courses are there in this dataset?
+
+```{r q2a, warning=FALSE, results='hide'}
+flavor_profiles <- india |> 
+  group_by(flavor_profile) |> 
+  summarize(n = n()) |> 
+  arrange(flavor_profile) |> 
+  rename(count = n)
+```
+
+```{r}
+flavor_profiles_graph <- ggplot(flavor_profiles, 
+                                mapping = aes(x=flavor_profile,
+                                              y=count,
+                                              fill=flavor_profile,
+                                              text = paste("Flavor Profile: ", flavor_profile, "\n",
+                                                           "Count: ", count, sep=""))) +
+  geom_col() +
+  labs(title = "Number of Dishes per Flavor Profile in Dataset",
+       x = "Flavor Profiles",
+       y = "Number of Dishes") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.position = "none"
+        ) + coord_flip() + 
+  scale_x_discrete(breaks=c("sweet","spicy","sour", "savory", "bitter"),
+                   labels=c("Sweet", "Spicy", "Sour", "Savory", "Bitter"))
+```
+
+```{r}
+ggplotly(flavor_profiles_graph, tooltip = "text")
+```
+
+We can see that there is a lot of Spicy foods listed with Sweet foods following closely. However, we do not have a lot of Sour, Bitter, or Savory foods compared to the other two flavor profiles.
+
+```{r q2b, warning=FALSE, results='hide'}
+courses <- india |> 
+  group_by(course) |> 
+  summarize(n = n()) |> 
+  arrange(course) |> 
+  rename(count = n)
+```
+
+```{r}
+courses_graph <- ggplot(courses, 
+                        mapping = aes(x=course,
+                                      y=count,
+                                      fill=course,
+                                      text = paste("Course: ", course, "\n",
+                                                   "Count: ", count, sep=""))) +
+  geom_col() +
+  labs(title = "Number of Dishes per Course in Dataset",
+       x = "Course",
+       y = "Number of Dishes") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.position = "none",
+        axis.ticks.y = element_blank()
+        ) + coord_flip() + 
+  scale_x_discrete(breaks=c("starter","snack","main course", "dessert"),
+                   labels=c("Starter", "Snack", "Main Course", "Dessert"))
+```
+
+```{r}
+ggplotly(courses_graph, tooltip = "text")
+```
+
+This is also a pretty uneven split amongst the different Courses. Just keep this as food for though.
+
+#### 3. What percent of the food in this dataset are vegetarian/non-vegetarian?
+
+```{r q3, warning=FALSE, results='hide'}
+diets <- india |> 
+  group_by(diet) |> 
+  summarize(n = n()) |> 
+  arrange(diet) |> 
+  rename(count = n)
+```
+
+```{r message=FALSE}
+diets_graph <- ggplot(diets,
+                      mapping = aes(x="",
+                                    y=diet,
+                                    fill=diet)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0) +
+  theme_void()  +
+  labs(
+    title = "Number of Dishes that are Veg/Non-Veg in Dataset",
+    fill = "Diet"
+  ) +
+  theme(
+    text = element_text(family = "serif",
+                            color = "black"),
+    plot.title = element_text(size=20, 
+                              hjust=.5)
+  ) +
+  scale_fill_discrete(name = "Diet", labels = c("Non-Vegetarian", "Vegetarian")) +
+  scale_fill_manual(values=c("#fc8d62", "#66c2a5"))
+diets_graph
+```
+
+Well this is certainly very un-even. However, if you remember, North and West India dominate this dataset, and those are usually more vegetarian due to religious reasons.
+
+Now that we have examined all five characteristics of this dataset and found that they are not uniformly distributed, all of our further answering and analysis will be contained within this dataset. This will make sense as we proceed with this analysis.
+
+## Section 3: Exploratory Data Visualizations
+
+Now let's answer some more ***interesting*** questions🤭!
+
+#### 4. Does Prep-Time and Cook-Time ratio influence what type of Flavor Profile it creates? What about influencing what Course it creates?
+
+#### 

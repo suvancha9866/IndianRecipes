@@ -1,5 +1,6 @@
 ---
 title: "Indian Recipes"
+author: "Suvan Chatakondu"
 ---
 
 ## Section 1: Dataset
@@ -8,7 +9,7 @@ This is an examination of an Indian Food Dataset containing dishes from various 
 
 I chose this dataset because I am Indian American and love looking at food. I thought it would be interesting to analyze the regions and states of India and how their food differentiates and varies. This was also a really lovely, laid-out dataset with flavor profiles and course types.
 
-I found this dataset by searching food on [Kaggle](https://www.kaggle.com/datasets/nehaprabhavalkar/indian-food-101/datandefined). It caught my eye, and I wanted to analyze it. This is the `indian_food.csv` dataset.
+I found this dataset by searching food on [Kaggle](https://www.kaggle.com/datasets/nehaprabhavalkar/indian-food-101/datandefined){target="_blank"}. It caught my eye, and I wanted to analyze it. This is the `indian_food.csv` dataset.
 
 ```{r imports, include=FALSE}
 library(rvest)
@@ -23,12 +24,22 @@ library(extrafont)
 library(knitr)
 library(wesanderson)
 library(plotly)
+library(insight)
+library(highcharter)
+library(ggridges)
 loadfonts(device = "win")
+```
+
+```{r extracode, eval=FALSE, echo=FALSE}
+text = element_text(family = "serif",
+                            color = "black"),
 ```
 
 ```{r loadingdata}
 india <- read.csv("indian_food.csv")
-head(india)
+ordered <- india |> 
+  arrange(name)
+knitr::kable(head(ordered), format="html")
 ```
 
 The Indian Food dataset we are working with has 225 food entries and 9 columns of characteristics.
@@ -66,15 +77,16 @@ state_graph <- ggplot(states,
        x = "State",
        y = "Number of Dishes") +
   theme_wsj() +
-  theme(text = element_text(family = "serif",
-                            color = "black"),
+  theme(
         axis.title.x = element_text(size = 15),
         axis.title.y = element_text(size = 15),
-        axis.text.y = element_text(size = 10),
+        axis.text.y = element_text(size = 10, 
+                                   family = "serif"),
         axis.text.x = element_text(angle = 80,
                                    size = 10,
                                    hjust = .9,
-                                   color = "black"
+                                   color = "black",
+                                   family = "serif"
                                    ),
         axis.line.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -114,15 +126,16 @@ region_graph <- ggplot(regions,
        x = "Region",
        y = "Number of Dishes") +
   theme_wsj() +
-  theme(text = element_text(family = "serif",
-                            color = "black"),
+  theme(
         axis.title.x = element_text(size = 15),
         axis.title.y = element_text(size = 15),
-        axis.text.y = element_text(size = 15),
+        axis.text.y = element_text(size = 15,
+                                   family = "serif"),
         axis.text.x = element_text(angle = 80,
                                    size = 15,
                                    hjust = .5,
-                                   color = "black"
+                                   color = "black",
+                                   family = "serif"
                                    ),
         axis.line.x = element_blank(),
         axis.ticks.x = element_blank(),
@@ -160,12 +173,13 @@ flavor_profiles_graph <- ggplot(flavor_profiles,
        x = "Flavor Profiles",
        y = "Number of Dishes") +
   theme_wsj() +
-  theme(text = element_text(family = "serif",
-                            color = "black"),
+  theme(
         axis.title.x = element_text(size = 15),
         axis.title.y = element_text(size = 15),
-        axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15,
+                                   family="serif"),
+        axis.text.x = element_text(size = 15,
+                                   family="serif"),
         plot.title = element_text(hjust = .5, 
                                   size=20),
         legend.position = "none"
@@ -200,12 +214,13 @@ courses_graph <- ggplot(courses,
        x = "Course",
        y = "Number of Dishes") +
   theme_wsj() +
-  theme(text = element_text(family = "serif",
-                            color = "black"),
+  theme(
         axis.title.x = element_text(size = 15),
         axis.title.y = element_text(size = 15),
-        axis.text.y = element_text(size = 15),
-        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15,
+                                   family = "serif"),
+        axis.text.x = element_text(size = 15,
+                                   family = "serif"),
         plot.title = element_text(hjust = .5, 
                                   size=20),
         legend.position = "none",
@@ -249,8 +264,7 @@ diets_graph <- ggplot(diets,
     plot.title = element_text(size=20, 
                               hjust=.5)
   ) +
-  scale_fill_discrete(name = "Diet", labels = c("Non-Vegetarian", "Vegetarian")) +
-  scale_fill_manual(values=c("#fc8d62", "#66c2a5"))
+  scale_fill_manual(values=c("#fc8d62", "#66c2a5"), name = "Diet", labels = c("Non-Vegetarian", "Vegetarian"))
 diets_graph
 ```
 
@@ -264,4 +278,431 @@ Now let's answer some more ***interesting*** questions🤭!
 
 #### 4. Does Prep-Time and Cook-Time ratio influence what type of Flavor Profile it creates? What about influencing what Course it creates?
 
-#### 
+```{r q4ai}
+ratio1_graph1 <- india |> 
+  ggplot(aes(x=prep_time, 
+             y=cook_time, 
+             col=flavor_profile, 
+             text = paste("Dish: ", name, "\n",
+                          "Flavor Profile: ", flavor_profile, "\n",
+                          "Prep Time: ", prep_time, " mins\n",
+                          "Cook Time: ", cook_time, " mins\n", sep=""))) +
+  geom_jitter(width = .5, height = .5) +
+  labs(title = "Flavor Profiles wrt Prep & Cook Time",
+       x = "Prep Time",
+       y = "Cook Time",
+       col = "Flavor Profile") +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15), 
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.title = element_text(size = 15)
+        )
+ggplotly(ratio1_graph1, tooltip = "text")
+```
+
+Alright. We have some massive outliers here. We can just be satisfied with this graph. Or we can filter out some of the more expansive prep and cook times. Let's do this with some boxplots to decide the boundaries.
+
+```{r q4aii}
+ratio1_graph2 <- india |> 
+  filter(prep_time >= 0) |> 
+  ggplot(aes(x=prep_time)) +
+  geom_boxplot() + 
+  labs(title = "Prep-Time Boxplot",
+       x = "Prep Time") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        ) +
+  ylim(-1, 1)
+ratio1_graph2
+```
+
+Goodness, there's a lot of outlier in prep-time, lets lock it down to minutes in the data that aren't outliers.
+
+```{r, echo=FALSE}
+boxplot_table1 <- layer_data(ratio1_graph2) |> 
+  select(xmin:xmax)
+knitr::kable(boxplot_table1)
+```
+
+Let's do the same for Cook Time.
+
+```{r q4aiii}
+ratio1_graph3 <- india |> 
+  filter(cook_time >= 0) |> 
+  ggplot(aes(x=cook_time)) +
+  geom_boxplot() + 
+  labs(title = "Cook-Time Boxplot",
+       x = "Cook Time") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        ) +
+  ylim(-1, 1)
+ratio1_graph3
+```
+
+```{r, echo=FALSE}
+boxplot_table2 <- layer_data(ratio1_graph3) |> 
+  select(xmin:xmax)
+knitr::kable(boxplot_table2)
+```
+
+Bet. Now we have the numbers. Lets redo the plot!
+
+```{r q4aiv}
+ratio1_graph4 <- india |> 
+  filter(prep_time >= 0 & prep_time <= 35 & cook_time >= 0 & cook_time <= 75) |> 
+  ggplot(aes(x=prep_time, 
+             y=cook_time, 
+             col=flavor_profile,
+             label = name,
+             text = paste("Dish: ", name, "\n",
+                          "Flavor Profile: ", flavor_profile, "\n",
+                          "Prep Time: ", prep_time, " mins\n",
+                          "Cook Time: ", cook_time, " mins\n", sep=""))) +
+  geom_jitter(width = 0.7, height = 0.7) +
+  labs(title = "Flavor Profiles wrt Prep & Cook Time",
+       x = "Prep Time",
+       y = "Cook Time",
+       col = "Flavor Profile") +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15), 
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.title = element_text(size = 15)
+        )
+ggplotly(ratio1_graph4, tooltip = "text")
+```
+
+This is an interesting graph. I like it. We can see that Sweet things take a little less to prep and still take a while to cook. Spicy is a little more prep but cooking is about the same as sweets. Savory doesn't take too long to prep or cook from what information we have in this plot. This is good stuff. We should do some mathematical analysis. But we will keep that for section 4. Lets do the same for course.
+
+```{r q4bi}
+ratio2_graph1 <- india |> 
+  filter(prep_time >= 0 & prep_time <= 35 & cook_time >= 0 & cook_time <= 75) |>
+  ggplot(aes(x=prep_time, 
+             y=cook_time, 
+             col=course, 
+             text = paste("Dish: ", name, "\n",
+                          "Course: ", course, "\n",
+                          "Prep Time: ", prep_time, " mins\n",
+                          "Cook Time: ", cook_time, " mins\n", sep=""))) +
+  geom_jitter(width = .5, height = .5) +
+  labs(title = "Courses wrt Prep & Cook Time",
+       x = "Prep Time",
+       y = "Cook Time",
+       col = "Course") +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15), 
+        axis.text.y = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20),
+        legend.title = element_text(size = 15)
+        )
+ggplotly(ratio2_graph1, tooltip = "text")
+```
+
+Gosh now I want numbers. These graphs are good, but I need numerical confirmation about the averages. Let's find out some numbers.
+
+```{r q4ci}
+ratio_table1 <- india |> 
+  filter(prep_time >= 0 & prep_time <= 35 & cook_time >= 0 & cook_time <= 75) |>
+  mutate(ratio = cook_time / prep_time) |> 
+  group_by(flavor_profile) |> 
+  summarize(CookPrepRatio = mean(ratio)) |> 
+  arrange(desc(CookPrepRatio)) |> 
+  rename(FlavorProfile = flavor_profile)
+knitr::kable(ratio_table1)
+```
+
+Here we can see that Sweet has more cook time per minute of prep time compared to the others. But to find out if this is significant or not would need to do some hypothesis testing.
+
+```{r q4cii}
+ratio_table2 <- india |> 
+  filter(prep_time >= 0 & prep_time <= 35 & cook_time >= 0 & cook_time <= 75) |>
+  mutate(ratio = cook_time / prep_time) |> 
+  group_by(course) |> 
+  summarize(CookPrepRatio = mean(ratio)) |> 
+  arrange(desc(CookPrepRatio)) |> 
+  rename(Course = course)
+knitr::kable(ratio_table2)
+```
+
+Ok, I thought that desserts would take more time based on the fact that sweets were the highest Cook Prep Time Ratio. So this looks right. We would need to do some hypothesis testing to see how significantly higher the dessert ratio is. (Note: Find mean time for ratio and see if it is statistically significant using hypothesis testing)
+
+#### 5. What are each region's/state's distribution for prep/cook time amongst all of the dishes?
+
+Ooh interesting question indeed. Lets do the same process 😭.
+
+```{r 5a}
+time_prepped1 <- india |> 
+  filter(state != "-1" & prep_time != -1) |> 
+  group_by(state) |> 
+  summarize(
+    Count = n(),
+    Average = mean(prep_time),
+    Minimum = min(prep_time),
+    Quartile1 = quantile(prep_time, probs = c(.25), type = 1),
+    Median = median(prep_time),
+    Quartile3 = quantile(prep_time, probs = c(.75), type = 1),
+    Maximum = max(prep_time)
+  ) |> 
+  arrange(desc(Median))
+knitr::kable(time_prepped1)
+```
+
+```{r 5aii}
+india |> 
+  filter(state != "-1" & prep_time != -1) |> 
+  ggplot(aes(x = prep_time, y = state)) +
+  geom_boxplot() + 
+  labs(title = "Prep Time by State",
+       x = "Prep Time",
+       y = "State") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        )
+```
+
+I ordered this list by the highest median. There are a lot of outliers in this dataset so we have to use the neutral party that isn't affected by outliers is the median. But the sample size isn't the same between all of the states so some of these states are weighted more heavily. Like Manipur at the top is affected heavily because there is only one dish in this dataset. but we can see that Karnatka and Punjab are higher in this list in terms of Prep Time. These two states are no where near each other but we can look at the regions.
+
+```{r 5b}
+time_prepped2 <- india |> 
+  filter(region != "-1" & prep_time != -1) |> 
+  group_by(region) |> 
+  summarize(
+    Count = n(),
+    Average = mean(prep_time),
+    Minimum = min(prep_time),
+    Quartile1 = quantile(prep_time, probs = c(.25), type = 1),
+    Median = median(prep_time),
+    Quartile3 = quantile(prep_time, probs = c(.75), type = 1),
+    Maximum = max(prep_time)
+  ) |> 
+  arrange(desc(Median))
+knitr::kable(time_prepped2)
+```
+
+```{r 5bii}
+india |> 
+  filter(region != "-1" & prep_time != -1) |> 
+  ggplot(aes(x = prep_time, y = region)) +
+  geom_boxplot() + 
+  labs(title = "Prep Time by Region",
+       x = "Prep Time",
+       y = "Region") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        )
+```
+
+Well, this displays that East and North is higher than West and South by a couple of minutes, but we would have to do some further hypothesis testing to see if there is actually a difference. (Will do this later.)
+
+```{r 5c}
+time_cooked1 <- india |> 
+  filter(state != "-1" & cook_time != -1) |> 
+  group_by(state) |> 
+  summarize(
+    Count = n(),
+    Average = mean(cook_time),
+    Minimum = min(cook_time),
+    Quartile1 = quantile(cook_time, probs = c(.25), type = 1),
+    Median = median(cook_time),
+    Quartile3 = quantile(cook_time, probs = c(.75), type = 1),
+    Maximum = max(cook_time)
+  ) |> 
+  arrange(desc(Median))
+knitr::kable(time_cooked1)
+```
+
+```{r 5cii}
+india |> 
+  filter(state != "-1" & cook_time != -1) |> 
+  ggplot(aes(x = cook_time, y = state)) +
+  geom_boxplot() + 
+  labs(title = "Cook Time by Region",
+       x = "Cook Time",
+       y = "State") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        )
+```
+
+```{r 5d}
+time_cooked2 <- india |> 
+  filter(region != "-1" & cook_time != -1) |> 
+  group_by(region) |> 
+  summarize(
+    Count = n(),
+    Average = mean(cook_time),
+    Minimum = min(cook_time),
+    Quartile1 = quantile(cook_time, probs = c(.25), type = 1),
+    Median = median(cook_time),
+    Quartile3 = quantile(cook_time, probs = c(.75), type = 1),
+    Maximum = max(cook_time)
+  ) |> 
+  arrange(desc(Median))
+knitr::kable(time_cooked2)
+```
+
+```{r 5dii}
+india |> 
+  filter(region != "-1" & cook_time != -1) |> 
+  ggplot(aes(x = cook_time, y = region)) +
+  geom_boxplot() + 
+  labs(title = "Cook Time by Region",
+       x = "Cook Time",
+       y = "Region") +
+  theme_wsj() +
+  theme(text = element_text(family = "serif",
+                            color = "black"),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        axis.text.x = element_text(size = 15),
+        plot.title = element_text(hjust = .5, 
+                                  size=20)
+        )
+```
+
+All of these medians pretty much look the same😭. This would be amazing for hypothesis testing. Good for looking at this for now, we will look into this for further detail in Section 4.
+
+Now for some questions that I just want answered but aren't really that fun.
+
+#### 6. Which state has the highest amount of vegetarian dishes? What about non-vegetarian dishes.
+
+```{r 6a}
+india |> 
+  filter(diet == "vegetarian" & state != "-1") |> 
+  group_by(state) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = state, y = count)) |> 
+  hc_title(text = "% of Vegetarian dishes by State")
+```
+
+Yo highcharter is so much cooler. Might change some of the charts to highcharter. We can see that Gujarat, Punjab, and Maharashtra take the pie of vegetarian dishes. But we have to consider that there are just more of these state's dishes.
+
+```{r 6b}
+india |> 
+  filter(diet == "non vegetarian" & state != "-1") |> 
+  group_by(state) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = state, y = count)) |> 
+  hc_title(text = "% of Non Vegetarian dishes by State")
+```
+
+This is a wonderfully bad dataset. But we can see that this distribution is not very accurate because this isn't a full dataset. But Assam having that many non-veg dishes is surprising compared to many of the south states.
+
+#### 7. Which region/state has the highest amount of sweet dishes? What about spicy dishes.
+
+```{r 7a}
+india |> 
+  filter(flavor_profile == "sweet" & region != "-1") |> 
+  group_by(region) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = region, y = count)) |> 
+  hc_title(text = "% of Sweet dishes by Region")
+```
+
+Wow, thats a nice split. Each region is about the same. Except for the ones that don't have that many states in that category.
+
+```{r 7b}
+india |> 
+  filter(flavor_profile == "sweet" & state != "-1") |> 
+  group_by(state) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = state, y = count)) |> 
+  hc_title(text = "% of Sweet dishes by State")
+```
+
+MH and WB take the cake for this. Pretty surprising honestly.
+
+```{r 7c}
+india |> 
+  filter(flavor_profile == "spicy" & region != "-1") |> 
+  group_by(region) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = region, y = count)) |> 
+  hc_title(text = "% of Spicy dishes by Region")
+```
+
+Oh East lacking. And West dominates here.
+
+```{r 7d}
+india |> 
+  filter(flavor_profile == "spicy" & state != "-1") |> 
+  group_by(state) |> 
+  summarize(count = n()) |> 
+  hchart("pie", hcaes(x = state, y = count)) |> 
+  hc_title(text = "% of Spicy dishes by State")
+```
+
+Wait this lowkey wild. Gujurat and Punjab dominating this much is crazy. But this dataset is so bad😭. Why couldn't the distribution be better.
+
+### Section 3b: Andhra Pradesh Details
+
+I roots are in Andhra Pradhesh and I wanted to see more details about the Andhra dishes on here.
+
+```{r}
+andhra <- india |> 
+  filter(state == "Andhra Pradesh")
+knitr::kable(andhra)
+```
+
+#### 8. What ingredients are most prevalent in Andhra dishes?
+
+```{r 8cleaning, include=FALSE}
+ingredient_list = c()
+for (recipe in andhra$ingredients) {
+  ingredients <- strsplit(recipe, ",")
+  ingredient <- unlist(ingredients)
+  ingredient <- trimws(ingredient)
+  ingredient_list <- c(ingredient_list, ingredient)
+}
+ingredient_list
+```

@@ -696,7 +696,7 @@ knitr::kable(andhra)
 
 #### 8. What ingredients are most prevalent in Andhra dishes?
 
-```{r 8cleaning, include=FALSE}
+```{r 8cleaning}
 ingredient_list = c()
 for (recipe in andhra$ingredients) {
   ingredients <- strsplit(recipe, ",")
@@ -704,5 +704,45 @@ for (recipe in andhra$ingredients) {
   ingredient <- trimws(ingredient)
   ingredient_list <- c(ingredient_list, ingredient)
 }
-ingredient_list
+andhra_ingredients <- as_tibble(ingredient_list)
 ```
+
+```{r 8}
+andhra_ingredients |> 
+  group_by(value) |> 
+  summarize(count = n()) |> 
+  rename(ingredient = value) |> 
+  hchart("pie", hcaes(x = ingredient, y = count)) |> 
+  hc_title(text = "Prevalance of Ingredients in Andhra Dishes")
+```
+
+Though all of the dishes listed under Andhra aren't actually main courses, it is still interesting to see all of the snacks and desserts of Andhra. It is quite interesting to see. Rice Flour and Jaggery are very prevalent amongst these dishes in Andhra, which isn't very surprising either.
+
+## Section 4: Hypothesis Testing
+
+Ok now that I am done with visualizing my questions with this incomplete dataset (As I kept the visualizations going, I realized how incomplete this dataset is. It is actually really bad for analysis). This dataset can not and will not prove anything because of how unevenly distributed it is. So we need to be mindful about anything that I do here.
+
+#### 1. Do sweet flavor profiles have a greater cook time per minute of prep time compared to the dataset population?
+
+**Null Hypothesis**: H~0~ : $$\mu$$ ~East~ = $$\mu$$
+
+**Alternative Hypothesis**: H~a~ : $\mu$ ~East~ \> $\mu$
+
+**Significance Level**: $\alpha$ = .05
+
+```{r}
+mean_total <- mean(india$prep_time)
+std_total <- sd(india$prep_time)
+mean_total
+std_total
+east <- india |> 
+  filter(region == "East") 
+mean_east <- mean(east$prep_time)
+std_east <- sd(east$prep_time)
+mean_east
+std_east
+```
+
+#### 2. Are the dishes from the East have a longer prep time compared to the dataset population?
+
+#### 3. Are the dishes from the East have a longer cook time compared to the dataset population?

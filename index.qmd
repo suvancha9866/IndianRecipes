@@ -558,7 +558,7 @@ india |>
   filter(state != "-1" & cook_time != -1) |> 
   ggplot(aes(x = cook_time, y = state)) +
   geom_boxplot() + 
-  labs(title = "Cook Time by Region",
+  labs(title = "Cook Time by State",
        x = "Cook Time",
        y = "State") +
   theme_wsj() +
@@ -722,27 +722,67 @@ Though all of the dishes listed under Andhra aren't actually main courses, it is
 
 Ok now that I am done with visualizing my questions with this incomplete dataset (As I kept the visualizations going, I realized how incomplete this dataset is. It is actually really bad for analysis). This dataset can not and will not prove anything because of how unevenly distributed it is. So we need to be mindful about anything that I do here.
 
-#### 1. Do sweet flavor profiles have a greater cook time per minute of prep time compared to the dataset population?
+#### 1. Do sweet flavor profiles have a greater cook time per minute of prep time compared to the spicy flavor profile?
 
-**Null Hypothesis**: H~0~ : $$\mu$$ ~East~ = $$\mu$$
+**Null Hypothesis**: H~0~ : $\mu$ ~sweet~ = $\mu$ ~spicy~
 
-**Alternative Hypothesis**: H~a~ : $\mu$ ~East~ \> $\mu$
+**Alternative Hypothesis**: H~0~ : $\mu$ ~sweet~ \> $\mu$ ~spicy~
 
 **Significance Level**: $\alpha$ = .05
 
 ```{r}
-mean_total <- mean(india$prep_time)
-std_total <- sd(india$prep_time)
-mean_total
-std_total
-east <- india |> 
-  filter(region == "East") 
-mean_east <- mean(east$prep_time)
-std_east <- sd(east$prep_time)
-mean_east
-std_east
+sweet <- india$cook_time[india$flavor_profile == "sweet"]
+spicy <- india$cook_time[india$flavor_profile == "spicy"]
+hist(sweet)
+hist(spicy)
 ```
 
-#### 2. Are the dishes from the East have a longer prep time compared to the dataset population?
+Let's just assume the law of large numbers and see what happens.
 
-#### 3. Are the dishes from the East have a longer cook time compared to the dataset population?
+```{r}
+t.test(sweet, spicy)
+```
+
+Though the p-value is low, it is not low enough. We do not have significant evidence that the cook time of sweet dishes is different from the cook time of spicy dishes, thus failing to reject our null hypothesis.
+
+#### 2. Do the dishes from the East have a longer prep time compared to the South?
+
+**Null Hypothesis**: H~0~ : $\mu$ ~East~ = $\mu$ ~South~
+
+**Alternative Hypothesis**: H~a~ : $\mu$ ~East~ \> $\mu$ ~South~
+
+**Significance Level**: $\alpha$ = .05
+
+```{r}
+east <- india$prep_time[india$region == "East"]
+south <- india$prep_time[india$region == "South"]
+hist(east)
+hist(south)
+```
+
+This is not a normal distribution for either the south or the east but we will use the law of large numbers anyway.
+
+```{r}
+t.test(east, south)
+```
+
+So as we can see from this output, we fail to reject the statement that the average amount of prep time for the east is equal to the amount of prep time for the south.
+
+#### 3. Are the dishes from the East have a longer cook time compared to the South?
+
+```{r}
+east <- india$cook_time[india$region == "East"]
+south <- india$cook_time[india$region == "South"]
+hist(east)
+hist(south)
+```
+
+```{r}
+t.test(east, south)
+```
+
+Due to the p-value being greater than the alpha = .05, we do not sufficient eveidence to reject the null hypothesis. Thus we fail to reject the hypothesis that the average amount of cook time for the east is equal to the amount of cook time for the south.
+
+## Section 5: Conclusion
+
+I had fun doing this. I learned so much. This is a little sarcastic, but if this was a better dataset that was more filled up. But I liked learning how to build a site using Quarto. I remember a lot more R now and this was so fun to learn. Highcharter and GGplot are so cool. If they were more intuitive it would've been awesomer. But whatever.
